@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 import static com.usmanadio.drone.utils.Constants.API;
-import static com.usmanadio.drone.utils.Routes.Medication.MEDICATIONS;
+import static com.usmanadio.drone.utils.validations.Routes.Medication.MEDICATIONS;
 
 @RestController
 @RequiredArgsConstructor
