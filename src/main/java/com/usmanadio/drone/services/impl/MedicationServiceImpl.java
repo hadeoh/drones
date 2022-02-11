@@ -1,4 +1,4 @@
-package com.usmanadio.drone.services;
+package com.usmanadio.drone.services.impl;
 
 import com.usmanadio.drone.dtos.MedicationDto;
 import com.usmanadio.drone.enums.DroneState;
@@ -8,6 +8,7 @@ import com.usmanadio.drone.models.Medication;
 import com.usmanadio.drone.pojos.Response;
 import com.usmanadio.drone.repositories.DroneRepository;
 import com.usmanadio.drone.repositories.MedicationRepository;
+import com.usmanadio.drone.services.MedicationService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -23,7 +24,7 @@ import static com.usmanadio.drone.utils.Constants.SUCCESS_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
-public class MedicationServiceImpl implements MedicationService{
+public class MedicationServiceImpl implements MedicationService {
 
     private final MedicationRepository medicationRepository;
     private final DroneRepository droneRepository;

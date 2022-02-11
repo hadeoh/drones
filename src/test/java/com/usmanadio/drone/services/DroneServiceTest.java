@@ -14,14 +14,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class DroneServiceTest {
 
@@ -57,6 +61,21 @@ public class DroneServiceTest {
         assertThat(response.getMessage()).isEqualTo("Operation successful");
         assertThat(response.getErrors()).isNull();
         assertThat(response.getData()).isNotNull();
+    }
+
+    @Test
+    void test_check_available_drones_for_loading() {
+        List<Drone> droneList = new ArrayList<>();
+        droneList.add(buildDroneModel());
+        Pageable pageable = PageRequest.of(0,10, Sort.by(Sort.Order.desc("createdAt").ignoreCase()));
+        Page<Drone> dronePage = new PageImpl<>(droneList,pageable, droneList.size());
+        when(droneRepository.findAllByState(DroneState.IDLE, pageable)).thenReturn(dronePage);
+        Response<Page<Drone>> response = droneService.checkAvailableDronesForLoading(1, 10);
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getData()).isNotNull();
+        assertThat(response.getData().getTotalElements()).isEqualTo(1);
+        verify(droneRepository, times(1)).findAllByState(DroneState.IDLE, pageable);
     }
 
     private Drone buildDroneModel() {
