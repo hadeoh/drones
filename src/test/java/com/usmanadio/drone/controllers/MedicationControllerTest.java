@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static com.usmanadio.drone.utils.Constants.API;
 import static com.usmanadio.drone.utils.validations.Routes.Drone.DRONES;
 import static com.usmanadio.drone.utils.validations.Routes.Medication.MEDICATIONS;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -83,6 +84,22 @@ public class MedicationControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("message", Matchers.is("Validation Error")))
                 .andExpect(jsonPath("errors", Matchers.notNullValue()));
+    }
+
+    @Test
+    public void test_check_drones_loaded() throws Exception {
+        MedicationDto medicationDto = MedicationDto.builder().imageUrl("https://www.med.com")
+                .code("ASDD_334AS").droneId(1L).weight(300).name("meDiCAtion12").build();
+        mockMvc.perform(post(API + DRONES)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(DroneDto.builder().serialNumber("ABCDEF").weightLimit(500).build()))).andDo(print());
+        mockMvc.perform(post(API + MEDICATIONS)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(medicationDto))).andDo(print());
+        mockMvc.perform(get(API + MEDICATIONS +"/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("message", Matchers.is("Operation successful")))
+                .andExpect(jsonPath("data", Matchers.notNullValue()));
     }
 
     private Drone buildDroneModel() {
