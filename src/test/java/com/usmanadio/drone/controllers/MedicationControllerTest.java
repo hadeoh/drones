@@ -2,20 +2,32 @@ package com.usmanadio.drone.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.usmanadio.drone.dtos.DroneDto;
 import com.usmanadio.drone.dtos.MedicationDto;
 import com.usmanadio.drone.enums.DroneModel;
 import com.usmanadio.drone.enums.DroneState;
 import com.usmanadio.drone.models.Drone;
+import com.usmanadio.drone.repositories.DroneRepository;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
+
 import static com.usmanadio.drone.utils.Constants.API;
+import static com.usmanadio.drone.utils.Routes.Drone.DRONES;
 import static com.usmanadio.drone.utils.Routes.Medication.MEDICATIONS;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,12 +52,15 @@ public class MedicationControllerTest {
     public void test_LoadDroneWithMedication() throws Exception {
         MedicationDto medicationDto = MedicationDto.builder().imageUrl("https://www.med.com")
                 .code("ASDD_334AS").droneId(1L).weight(300).name("meDiCAtion12").build();
+        mockMvc.perform(post(API + DRONES)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(DroneDto.builder().serialNumber("ABCDEF").weightLimit(500).build()))).andDo(print());
         mockMvc.perform(post(API + MEDICATIONS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(medicationDto))).andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("message", Matchers.is("Operation Successful")))
-                .andExpect(jsonPath("data.weightLimit", Matchers.is(300.0)))
+                .andExpect(jsonPath("message", Matchers.is("Operation successful")))
+                .andExpect(jsonPath("data.weight", Matchers.is(300.0)))
                 .andExpect(jsonPath("errors", Matchers.blankOrNullString()));
     }
 

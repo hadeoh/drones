@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 @Component
 public class MedicationNameValidator implements ConstraintValidator<MedicationName, String> {
 
-    private String regex = "[0-9a-zA-Z_-]";
+    private String regex = "^[0-9a-zA-Z_-]*$";
 
     @Override
     public boolean isValid(String name, ConstraintValidatorContext constraintValidatorContext) {

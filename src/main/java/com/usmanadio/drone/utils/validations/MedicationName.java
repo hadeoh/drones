@@ -15,7 +15,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Constraint(validatedBy = MedicationNameValidator.class)
 @Documented
 public @interface MedicationName {
-    String message() default "only letters, numbers, ‘-‘, ‘_’ are allowed";
+    String message() default "only letters, numbers, -, _ are allowed";
 
     Class<?>[] groups() default {};
 
