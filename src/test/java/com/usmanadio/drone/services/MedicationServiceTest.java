@@ -1,6 +1,5 @@
 package com.usmanadio.drone.services;
 
-import com.usmanadio.drone.dtos.DroneDto;
 import com.usmanadio.drone.dtos.MedicationDto;
 import com.usmanadio.drone.enums.DroneModel;
 import com.usmanadio.drone.enums.DroneState;
@@ -42,7 +41,9 @@ public class MedicationServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(droneRepository.findById(any())).thenReturn(Optional.of(buildDroneModel()));
+        when(droneRepository.findById(1L)).thenReturn(Optional.of(buildDroneModel()));
+        when(droneRepository.findById(2L)).thenReturn(Optional.of(build25PercentDroneModel()));
+        when(droneRepository.findById(4L)).thenReturn(Optional.of(buildLoadedDroneModel()));
         when(medicationRepository.save(any())).thenReturn(buildMedicationModel());
     }
 
@@ -63,8 +64,8 @@ public class MedicationServiceTest {
                 .loadDroneWithMedication(MedicationDto.builder()
                 .droneId(1L).code("CODE_1234").name("bigGram_-").weight(450)
                 .imageUrl("https://www.medicationdrone.com").build()));
-        assertThat(exception.getStatus()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-        assertThat(exception.getMessage()).isEqualTo("Drone cannot exceed its limit of 400");
+        assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(exception.getMessage()).isEqualTo("Drone cannot exceed its weight limit of 400.0");
     }
 
     @Test
@@ -73,8 +74,28 @@ public class MedicationServiceTest {
                 .loadDroneWithMedication(MedicationDto.builder()
                         .droneId(2L).code("CODE_1234").name("bigGram_-").weight(450)
                         .imageUrl("https://www.medicationdrone.com").build()));
-        assertThat(exception.getStatus()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(exception.getMessage()).isEqualTo("Drone cannot load medications with battery capacity less than 25%");
+    }
+
+    @Test
+    public void test_DroneShouldNotLoad_InOtherStatesExcept_IdleState() {
+        CustomException exception = assertThrows(CustomException.class, () -> medicationService
+                .loadDroneWithMedication(MedicationDto.builder()
+                        .droneId(4L).code("CODE_1234").name("bigGram_-").weight(50)
+                        .imageUrl("https://www.medicationdrone.com").build()));
+        assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(exception.getMessage()).isEqualTo("Drone is already in LOADED state");
+    }
+
+    @Test
+    public void test_ThrowError_DroneDoesNotExist() {
+        CustomException exception = assertThrows(CustomException.class, () -> medicationService
+                .loadDroneWithMedication(MedicationDto.builder()
+                        .droneId(3L).code("CODE_1234").name("bigGram_-").weight(300)
+                        .imageUrl("https://www.medicationdrone.com").build()));
+        assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(exception.getMessage()).isEqualTo("There is no such drone with id 3");
     }
 
     private Drone buildDroneModel() {
@@ -95,7 +116,19 @@ public class MedicationServiceTest {
         drone.setBatteryCapacity(24);
         drone.setSerialNumber("ASVG6U7I");
         drone.setWeightLimit(400);
-        drone.setId(1L);
+        drone.setId(2L);
+        return drone;
+    }
+
+    private Drone buildLoadedDroneModel() {
+        Drone drone = new Drone();
+        drone.setModel(DroneModel.Middleweight);
+        drone.setState(DroneState.IDLE);
+        drone.setBatteryCapacity(80);
+        drone.setSerialNumber("ASVG6U7I");
+        drone.setWeightLimit(400);
+        drone.setId(4L);
+        drone.setState(DroneState.LOADED);
         return drone;
     }
 
@@ -109,4 +142,6 @@ public class MedicationServiceTest {
         medication.setId(1L);
         return medication;
     }
+
+
 }
