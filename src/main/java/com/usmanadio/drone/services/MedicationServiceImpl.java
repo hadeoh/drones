@@ -10,6 +10,10 @@ import com.usmanadio.drone.repositories.DroneRepository;
 import com.usmanadio.drone.repositories.MedicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -27,23 +31,38 @@ public class MedicationServiceImpl implements MedicationService{
 
     @Override
     public Response<Medication> loadDroneWithMedication(MedicationDto medicationDto) {
-        Optional<Drone> drone = droneRepository.findById(medicationDto.getDroneId());
-        if (drone.isEmpty())
+        Optional<Drone> droneOptional = droneRepository.findById(medicationDto.getDroneId());
+        if (droneOptional.isEmpty())
             throw new CustomException("There is no such drone with id " + medicationDto.getDroneId(), HttpStatus.BAD_REQUEST);
-        if (drone.get().getBatteryCapacity() < 25)
+        Drone drone = droneOptional.get();
+        if (drone.getBatteryCapacity() < 25)
             throw new CustomException("Drone cannot load medications with battery capacity less than 25%", HttpStatus.BAD_REQUEST);
-        double weightLimit = drone.get().getWeightLimit();
+        double weightLimit = drone.getWeightLimit();
         if (medicationDto.getWeight() > weightLimit)
             throw new CustomException("Drone cannot exceed its weight limit of " + weightLimit, HttpStatus.BAD_REQUEST);
-        if (drone.get().getState() != DroneState.IDLE)
-            throw new CustomException("Drone is already in " + drone.get().getState() + " state", HttpStatus.BAD_REQUEST);
-        drone.get().setState(DroneState.LOADING);
-        droneRepository.save(drone.get());
+        if (drone.getState() != DroneState.IDLE)
+            throw new CustomException("Drone is already in " + drone.getState() + " state", HttpStatus.BAD_REQUEST);
         Medication medication = medicationRepository.save(modelMapper.map(medicationDto, Medication.class));
+        drone.setState(DroneState.LOADED);
+        droneRepository.save(drone);
         Response<Medication> response = new Response<>();
         response.setMessage(SUCCESS_MESSAGE);
         response.setStatus(HttpStatus.CREATED);
         response.setData(medication);
+        return response;
+    }
+
+    @Override
+    public Response<Page<Medication>> checkLoadedMedicationsForDrone(Long droneId, int pageNumber, int pageSize) {
+        Optional<Drone> droneOptional = droneRepository.findById(droneId);
+        if (droneOptional.isEmpty())
+            throw new CustomException("There is no such drone with id " + droneId, HttpStatus.BAD_REQUEST);
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize, Sort.by(Sort.Order.desc("createdAt").ignoreCase()));
+        Page<Medication> medications = medicationRepository.findAllByDrone_Id(droneId, pageable);
+        Response<Page<Medication>> response = new Response<>();
+        response.setData(medications);
+        response.setStatus(HttpStatus.OK);
+        response.setMessage(SUCCESS_MESSAGE);
         return response;
     }
 }

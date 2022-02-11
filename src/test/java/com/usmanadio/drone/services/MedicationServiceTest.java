@@ -15,14 +15,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class MedicationServiceTest {
 
@@ -96,6 +100,26 @@ public class MedicationServiceTest {
                         .imageUrl("https://www.medicationdrone.com").build()));
         assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(exception.getMessage()).isEqualTo("There is no such drone with id 3");
+    }
+
+    @Test
+    public void test_get_all_medication_loaded_for_given_drone() {
+        List<Medication> list = new ArrayList<>();
+        list.add(buildMedicationModel());
+        Medication medication = buildMedicationModel();
+        medication.setId(2L);
+        list.add(medication);
+        Pageable pageable = PageRequest.of(0,10, Sort.by(Sort.Order.desc("createdAt").ignoreCase()));
+
+        Page<Medication> medicationPage = new PageImpl<>(list,pageable, list.size());
+        when(medicationRepository.findAllByDrone_Id(1L, pageable)).thenReturn(medicationPage);
+        var response = medicationService.checkLoadedMedicationsForDrone(1L, 1, 10);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getData()).isNotNull();
+        assertThat(response.getData().getTotalElements()).isEqualTo(2);
+        verify(medicationRepository, times(1)).findAllByDrone_Id(1L, pageable);
     }
 
     private Drone buildDroneModel() {
