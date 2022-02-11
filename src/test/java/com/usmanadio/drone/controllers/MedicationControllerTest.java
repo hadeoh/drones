@@ -19,15 +19,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
 
 import static com.usmanadio.drone.utils.Constants.API;
-import static com.usmanadio.drone.utils.Routes.Drone.DRONES;
-import static com.usmanadio.drone.utils.Routes.Medication.MEDICATIONS;
-import static org.mockito.Mockito.when;
+import static com.usmanadio.drone.utils.validations.Routes.Drone.DRONES;
+import static com.usmanadio.drone.utils.validations.Routes.Medication.MEDICATIONS;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

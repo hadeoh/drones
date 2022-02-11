@@ -1,4 +1,4 @@
-package com.usmanadio.drone.utils;
+package com.usmanadio.drone.utils.validations;
 
 public class Routes {
     public static class Drone {
