@@ -43,6 +43,7 @@ public class DroneServiceTest {
         MockitoAnnotations.initMocks(this);
         when(droneRepository.findBySerialNumber("ASVG6U7I")).thenReturn(Optional.of(buildDroneModel()));
         when(droneRepository.save(any())).thenReturn(buildDroneModel());
+        when(droneRepository.findById(1L)).thenReturn(Optional.of(buildDroneModel()));
     }
 
     @Test
@@ -76,6 +77,16 @@ public class DroneServiceTest {
         assertThat(response.getData()).isNotNull();
         assertThat(response.getData().getTotalElements()).isEqualTo(1);
         verify(droneRepository, times(1)).findAllByState(DroneState.IDLE, pageable);
+    }
+
+    @Test
+    void test_check_drone_battery_level() {
+        Response<Drone> response = droneService.checkDroneBatteryCapacity(1L);
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getMessage()).isEqualTo("Operation successful");
+        assertThat(response.getErrors()).isNull();
+        assertThat(response.getData()).isNotNull();
+        assertThat(response.getData().getBatteryCapacity()).isEqualTo(100);
     }
 
     private Drone buildDroneModel() {

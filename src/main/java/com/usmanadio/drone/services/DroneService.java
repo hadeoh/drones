@@ -8,4 +8,5 @@ import org.springframework.data.domain.Page;
 public interface DroneService {
     Response<Drone> registerDrone(DroneDto droneDto);
     Response<Page<Drone>> checkAvailableDronesForLoading(int pageNumber, int pageSize);
+    Response<Drone> checkDroneBatteryCapacity(Long droneId);
 }

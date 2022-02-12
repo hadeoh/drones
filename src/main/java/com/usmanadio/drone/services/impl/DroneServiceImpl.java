@@ -17,6 +17,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static com.usmanadio.drone.utils.Constants.SUCCESS_MESSAGE;
 
 @Service
@@ -61,6 +63,19 @@ public class DroneServiceImpl implements DroneService {
         response.setMessage(SUCCESS_MESSAGE);
         response.setData(drones);
         response.setStatus(HttpStatus.OK);
+        return response;
+    }
+
+    @Override
+    public Response<Drone> checkDroneBatteryCapacity(Long droneId) {
+        Optional<Drone> droneOptional = droneRepository.findById(droneId);
+        if (droneOptional.isEmpty())
+            throw new CustomException("There is no such drone with id " + droneId, HttpStatus.BAD_REQUEST);
+        Response<Drone> response = new Response<>();
+        response.setData(droneOptional.get());
+        response.setErrors(null);
+        response.setStatus(HttpStatus.OK);
+        response.setMessage(SUCCESS_MESSAGE);
         return response;
     }
 }
