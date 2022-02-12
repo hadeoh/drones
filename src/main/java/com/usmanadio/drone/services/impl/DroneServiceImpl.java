@@ -10,6 +10,10 @@ import com.usmanadio.drone.repositories.DroneRepository;
 import com.usmanadio.drone.services.DroneService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +50,17 @@ public class DroneServiceImpl implements DroneService {
         response.setErrors(null);
         response.setStatus(HttpStatus.CREATED);
         response.setMessage(SUCCESS_MESSAGE);
+        return response;
+    }
+
+    @Override
+    public Response<Page<Drone>> checkAvailableDronesForLoading(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize, Sort.by(Sort.Order.desc("createdAt").ignoreCase()));
+        Page<Drone> drones = droneRepository.findAllByState(DroneState.IDLE, pageable);
+        Response<Page<Drone>> response = new Response<>();
+        response.setMessage(SUCCESS_MESSAGE);
+        response.setData(drones);
+        response.setStatus(HttpStatus.OK);
         return response;
     }
 }
