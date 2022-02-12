@@ -89,6 +89,13 @@ public class DroneServiceTest {
         assertThat(response.getData().getBatteryCapacity()).isEqualTo(100);
     }
 
+    @Test
+    void test_drone_does_not_exist() {
+        CustomException exception = assertThrows(CustomException.class, () -> droneService.checkDroneBatteryCapacity(2L));
+        assertThat(exception.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(exception.getMessage()).isEqualTo("There is no such drone with id 2");
+    }
+
     private Drone buildDroneModel() {
         Drone drone = new Drone();
         drone.setModel(DroneModel.Middleweight);

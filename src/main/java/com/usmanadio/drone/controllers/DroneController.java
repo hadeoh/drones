@@ -44,4 +44,13 @@ public class DroneController {
         Response<Page<Drone>> response = droneService.checkAvailableDronesForLoading(pageNumber, pageSize);
         return new ResponseEntity<>(response, response.getStatus());
     }
+
+    @GetMapping("/{droneId}")
+    @ApiOperation(value = "Check drones battery capacity",
+            produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE,
+            response = Response.class)
+    public ResponseEntity<Response<Drone>> checkDroneBatteryCapacity(@PathVariable("droneId") Long droneId) {
+        Response<Drone> response = droneService.checkDroneBatteryCapacity(droneId);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
 }

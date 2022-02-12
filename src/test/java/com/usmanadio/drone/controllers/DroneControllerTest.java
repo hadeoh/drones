@@ -105,6 +105,22 @@ public class DroneControllerTest {
                 .andExpect(jsonPath("errors", Matchers.blankOrNullString()));
     }
 
+    @Test
+    public void test_drone_battery_capacity() throws Exception {
+
+        Response<Drone> response = new Response();
+        response.setStatus(HttpStatus.OK);
+        response.setData(buildDroneModel());
+        response.setErrors(null);
+        response.setMessage(SUCCESS_MESSAGE);
+
+        when(droneService.checkDroneBatteryCapacity(1L)).thenReturn(response);
+        mockMvc.perform(get(API + DRONES + "/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("data", Matchers.notNullValue()))
+                .andExpect(jsonPath("errors", Matchers.blankOrNullString()));
+    }
+
     private Drone buildDroneModel() {
         Drone drone = new Drone();
         drone.setModel(DroneModel.Middleweight);
