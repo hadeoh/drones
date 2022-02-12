@@ -5,7 +5,9 @@ import com.usmanadio.drone.enums.DroneModel;
 import com.usmanadio.drone.enums.DroneState;
 import com.usmanadio.drone.exceptions.CustomException;
 import com.usmanadio.drone.models.Drone;
+import com.usmanadio.drone.models.DroneBatteryLog;
 import com.usmanadio.drone.pojos.Response;
+import com.usmanadio.drone.repositories.DroneBatteryLogRepository;
 import com.usmanadio.drone.repositories.DroneRepository;
 import com.usmanadio.drone.services.DroneService;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +17,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.usmanadio.drone.utils.Constants.SUCCESS_MESSAGE;
@@ -27,6 +32,7 @@ public class DroneServiceImpl implements DroneService {
 
     private final DroneRepository droneRepository;
     private final ModelMapper modelMapper;
+    private final DroneBatteryLogRepository droneBatteryLogRepository;
 
     @Override
     public Response<Drone> registerDrone(DroneDto droneDto) {
@@ -77,5 +83,20 @@ public class DroneServiceImpl implements DroneService {
         response.setStatus(HttpStatus.OK);
         response.setMessage(SUCCESS_MESSAGE);
         return response;
+    }
+
+    @Scheduled(cron = "0 0 * * * *")
+    void checkDroneBatteryLevels() {
+        List<Drone> drones = droneRepository.findAll();
+        List<DroneBatteryLog> list = new ArrayList<>();
+        if (!drones.isEmpty()) {
+            for (Drone drone : drones) {
+                DroneBatteryLog droneBatteryLog = new DroneBatteryLog();
+                droneBatteryLog.setDrone(drone);
+                droneBatteryLog.setBatteryLevel(drone.getBatteryCapacity());
+                list.add(droneBatteryLog);
+            }
+            droneBatteryLogRepository.saveAll(list);
+        }
     }
 }
